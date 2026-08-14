@@ -1,0 +1,28 @@
+<!doctype html><html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Wassel AR — Route Painter</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+#cam{position:fixed;inset:0;width:100%;height:100%;object-fit:cover}#ui{position:fixed;inset:0}
+.panel{position:absolute;left:14px;right:14px;background:#000b;color:#fff;border-radius:16px;padding:12px;text-align:center;z-index:3}
+.top{top:16px}.bottom{bottom:16px}button{border:0;border-radius:12px;padding:10px 14px;margin:4px;font-weight:700}
+#points{position:fixed;inset:0;z-index:2}.p{position:absolute;width:24px;height:24px;border-radius:50%;background:#20e66b;box-shadow:0 0 18px #20e66b;transform:translate(-50%,-50%);border:2px solid white}
+.p span{position:absolute;top:25px;right:50%;transform:translateX(50%);color:white;font-size:12px;text-shadow:0 1px 4px #000}
+.line{position:absolute;height:4px;background:#20e66b;transform-origin:left center;box-shadow:0 0 10px #20e66b;border-radius:5px}
+#target{position:absolute;transform:translate(-50%,-50%);font-size:42px;text-shadow:0 2px 6px #000}
+</style></head><body>
+<video id="cam" autoplay playsinline muted></video><div id="points"></div>
+<div class="panel top">Wassel — ارسم مسار الوصول</div>
+<div class="panel bottom">اضغط على الشاشة لوضع نقاط المسار<br>
+<button id="start">📷 تشغيل الكاميرا</button><button id="clear">مسح المسار</button>
+<div id="count">النقاط: 0</div></div>
+<script>
+const video=document.getElementById('cam'),layer=document.getElementById('points');let pts=[];
+document.getElementById('start').onclick=async()=>{try{video.srcObject=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})}catch(e){alert('اسمح للمتصفح باستخدام الكاميرا.')}};
+function render(){layer.innerHTML='';pts.forEach((p,i)=>{if(i){let a=pts[i-1],dx=p.x-a.x,dy=p.y-a.y,l=document.createElement('div');l.className='line';l.style.left=a.x+'px';l.style.top=a.y+'px';l.style.width=Math.hypot(dx,dy)+'px';l.style.transform='rotate('+Math.atan2(dy,dx)+'rad)';layer.appendChild(l)}
+let d=document.createElement('div');d.className='p';d.style.left=p.x+'px';d.style.top=p.y+'px';d.innerHTML='<span>'+(i+1)+'</span>';layer.appendChild(d)});
+if(pts.length){let t=document.createElement('div');t.id='target';t.textContent='🎯';t.style.left=pts.at(-1).x+'px';t.style.top=pts.at(-1).y+'px';layer.appendChild(t)}
+document.getElementById('count').textContent='النقاط: '+pts.length}
+document.addEventListener('click',e=>{if(e.target.closest('button'))return;pts.push({x:e.clientX,y:e.clientY});render()});
+document.getElementById('clear').onclick=()=>{pts=[];render()};
+</script></body></html>
